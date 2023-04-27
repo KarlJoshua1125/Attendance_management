@@ -32,6 +32,10 @@
         var database = firebase.database();
 
         $(document).ready(function () {
+            $( ".btn-lg" ).click(function() {
+             $(this).toggleClass('btn-success');
+             $(this).toggleClass('btn-danger'); // Add this line
+        });
             $('#sort-by-name-button').on('click', function() {
                 var rows = $('#students-table tbody tr').get();
                 rows.sort(function(row1, row2) {
@@ -162,11 +166,10 @@
         });
     </script>
 </head>
-
 <body>
 
     <div class="container">
-        <h2>Students List</h2>
+        <h2>Attendance Monitoring System</h2>
        
 
         <div class="row mb-5">
@@ -187,34 +190,36 @@
         <button type="button" class="btn btn-primary" id="add-student-btn">Add New Student</button>
         <table class="table table-striped" id="students-table">
             <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>First Name</th>
-                    <th>Last Name</th>
-                    <th>Year</th>
-                    <th>Course</th>
-                    <th>Actions</th>
-
-                </tr>
+              <tr>
+                <th>ID</th>
+                <th>First Name</th>
+                <th>Last Name</th>
+                <th>Year</th>
+                <th>Course</th>
+                <th>Attendance</th>
+                <th>Actions</th>
+              </tr>
             </thead>
             <tbody>
-                {% for student in students %}
-                <tr >
-                    <td class="id">{{ student.id }}</td>
-                    <td class="fname">{{ student.fname }}</td>
-                    <td class="lname">{{ student.lname }}</td>
-                    <td class="year">{{ student.year }}</td>
-                    <td class="course">{{ student.course }}</td>
-                    <td>
-                        <a href="#" class="edit-student btn btn-secondary" data-key="{{ student.key }}"
-                            data-bs-toggle="modal" data-bs-target="#update-student-modal">Edit</a>
-
-                        <a class="btn btn-danger" href='deletestudent/{{ student.id }}'>Delete</a>
-                    </td>
+              {% for student in students %}
+                <tr>
+                  <td class="id">{{ student.id }}</td>
+                  <td class="fname">{{ student.fname }}</td>
+                  <td class="lname">{{ student.lname }}</td>
+                  <td class="year">{{ student.year }}</td>
+                  <td class="course">{{ student.course }}</td>
+                   <td><button class='btn btn-danger btn-lg'></td>
+                  <td>
+                    <a href="#" class="edit-student btn btn-secondary" data-key="{{ student.key }}" data-bs-toggle="modal" data-bs-target="#update-student-modal">Edit</a>
+                    <a class="btn btn-danger" href='deletestudent/{{ student.id }}'>Delete</a>
+                  </td>
                 </tr>
-                {% endfor %}
+              {% endfor %}
             </tbody>
-        </table>  
+          </table>
+          
+          
+          
         <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
             <div class="modal-dialog">
                 <div class="modal-content">
