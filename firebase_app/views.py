@@ -4,53 +4,85 @@ from django.http import JsonResponse
 import firebase_admin
 from firebase_admin import credentials, db
 from .forms import StudentForm
+from datetime import date
 
 
 def connectDB():
     if not firebase_admin._apps:
         cred = credentials.Certificate("studentmanagement-admin-key.json")
         firebase_admin.initialize_app(cred, {
-            "databaseURL": "https://studentmanagement-84271-default-rtdb.firebaseio.com/" #Your database URL
+            "databaseURL": "https://studentmanagement-84271-default-rtdb.firebaseio.com/"  # Your database URL
         })
     dbconn = db.reference("StudentsList")
-    return dbconn
+    attendance_ref = db.reference("Attendance")
+    return attendance_ref, dbconn
 
 
 def index(request):
     students = []
-    dbconn = connectDB()
+    attendance_ref, dbconn = connectDB()
     tblStudents = dbconn.get()
     print(tblStudents)
     for key, value in tblStudents.items():
-        students.append({"id": int(value["ID"]), "fname": value["FirstName"], "lname": value["LastName"], "year": int(value["Year"]), "course": value["Course"], "key": key})
-    return render(request, 'index.html', {'students':students})
+        students.append({"id": int(value["ID"]), "fname": value["FirstName"], "lname": value["LastName"],
+                         "year": int(value["Year"]), "course": value["Course"], "key": key})
+    return render(request, 'index.html', {'students': students})
 
+def attendance(request):
+    attendance_ref, dbconn = connectDB()
+    students = dbconn.get()
+    dateInput = request.GET.get('date')
 
-def add_student(request):
-    if request.is_ajax() and request.method == 'POST':
-        form = StudentForm(request.POST)
-        if form.is_valid():
-            id = int(form.cleaned_data.get("id")) 
-            fname = form.cleaned_data.get("fname")
-            lname = form.cleaned_data.get("lname")
-            year = int(form.cleaned_data.get("year"))  
-            course = form.cleaned_data.get("course")
+    attendance_record = None
+    if dateInput:
+        attendance_record = attendance_ref.child(dateInput).get()
 
-            dbconn = connectDB()
-            dbconn.push({"ID": id, "FirstName": fname, "LastName": lname, "Year": year, "Course": course})
+    student_list = []
+    for student_key in students.keys():
+        student = students[student_key]
+        student_list.append({
+            'name': f"{student['FirstName']} {student['LastName']}",
+            'id': student_key,
+        })
 
-            
-            return JsonResponse({'status': 'success'})
-        else:
-           
-            return JsonResponse({'status': 'errors', 'errors': form.errors})
+    attendance_list = []
+    if attendance_record:
+        for attendance_key in attendance_record.keys():
+            att = attendance_record[attendance_key]
+            att_id = att['Name'].replace(" ", "_")
+            attendance_list.append({
+                'att_name': f"{att['Name']}",
+                'attendance': f"{att['Attendance']}",
+                'att_IDname': att_id,
+                'key': attendance_key
+            })
+
+    context = {
+        'current_date': date.today().strftime("%Y-%m-%d"),
+        'students': student_list,
+        'attendance': attendance_list
+    }
+    return render(request, 'attendance.html', context)
+
+def update_attendance(request):
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest' and request.method == 'POST':
+        attendanceStatus = request.POST.get('attendanceStatus')
+        attendanceKey = request.POST.get('attendanceKey')
+        dateInput = request.POST.get('dateInput')
+        attendance_ref, dbconn = connectDB()
+        attendance_ref.child(dateInput).child(attendanceKey).update({"Attendance": attendanceStatus})
+
+        return JsonResponse({'status': 'success'})
+    else:
+
+        return JsonResponse({'status': 'errors', 'errors': 'Unable to update student.'})
 
 
 def deletestudent(request, id):
-    dbconn = connectDB()
+    attendance_ref, dbconn = connectDB()
     tblStudents = dbconn.get()
     for key, value in tblStudents.items():
-        if(value["ID"] == id):
+        if (value["ID"] == id):
             deletekey = key
             break
     delitem = dbconn.child(deletekey)
@@ -66,16 +98,15 @@ def update_student(request):
         year = int(request.POST.get('year'))
         course = request.POST.get('course')
         key = request.POST.get('key')
-
-        dbconn = connectDB()
+        attendance_ref, dbconn = connectDB()
         dbconn.child(key).update({"ID": id, "FirstName": fname, "LastName": lname, "Year": year, "Course": course})
 
-      
         return JsonResponse({'status': 'success'})
     else:
-   
+
         return JsonResponse({'status': 'errors', 'errors': 'Unable to update student.'})
-    
+
+
 def search_students(request):
     query = request.GET.get('query', '')
     students = students.objects.filter(lname__icontains=query)
