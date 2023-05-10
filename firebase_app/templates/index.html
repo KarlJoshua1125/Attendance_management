@@ -239,6 +239,85 @@
     background-color: #c82333;
     border-color: #bd2130;
   }
+
+ /* Add your custom CSS styles here */
+    .modal-title {
+        color: #333;
+        font-size: 18px;
+        font-weight: bold;
+    }
+
+    .form-label {
+        font-weight: bold;
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        border-color: #007bff;
+    }
+
+    .btn-primary:hover {
+        background-color: #0069d9;
+        border-color: #0062cc;
+    }
+
+    .btn-secondary {
+        background-color: #6c757d;
+        border-color: #6c757d;
+    }
+
+    .btn-secondary:hover {
+        background-color: #5a6268;
+        border-color: #545b62;
+    }
+
+
+    .modal-content {
+        background-color: #f8f9fa;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .modal-header {
+        color: #fff;
+        padding: 10px 20px;
+        border-top-left-radius: 8px;
+        border-top-right-radius: 8px;
+    }
+
+    .modal-title {
+        font-size: 20px;
+        font-weight: bold;
+        margin: 0;
+    }
+
+    .modal-body {
+        padding: 20px;
+    }
+
+    .form-group {
+        margin-bottom: 15px;
+    }
+
+    .form-group label {
+        font-weight: bold;
+        margin-bottom: 5px;
+    }
+
+    .form-control {
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        padding: 8px;
+        width: 100%;
+        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+    }
+
+    .form-control:focus {
+        border-color: #80bdff;
+        outline: 0;
+        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+    }
+
 </style>
 
 <body>
@@ -246,18 +325,10 @@
     <div class="row">
         <div class="col-sm-auto bg-light sticky-top">
             <div class="d-flex flex-sm-column flex-row flex-nowrap bg-light align-items-center sticky-top">
-                <a href="" class="d-block p-3 link-dark text-decoration-none" title="" data-bs-toggle="tooltip"
-                   data-bs-placement="right" data-bs-original-title="Icon-only">
-                    <i class="fas fa-chalkboard-teacher fa-lg"></i>
-                </a>
+               
                 <ul class="nav nav-pills nav-flush flex-sm-column flex-row flex-nowrap mb-auto mx-auto text-center align-items-center">
 
-                    <li>
-                        <a href="" class="nav-link py-3 px-2" title="" data-bs-toggle="tooltip"
-                           data-bs-placement="right" data-bs-original-title="Dashboard">
-                            <i class="fas fa-tachometer fa-lg"></i>
-                        </a>
-                    </li>
+                    
                     <li>
                         <a href="{% url 'index' %}" class="nav-link py-3 px-2" title="" data-bs-toggle="tooltip"
                            data-bs-placement="right" data-bs-original-title="Students">
@@ -376,51 +447,47 @@
                         </div>
                     </div>
                 </div>
-                <div class="modal fade" id="update-student-modal" tabindex="-1"
-                     aria-labelledby="update-student-modal-label"
-                     aria-hidden="true">
-                    <div class="modal-dialog">
+                <div class="modal fade" id="update-student-modal" tabindex="-1" aria-labelledby="update-student-modal-label" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered">
                         <div class="modal-content">
                             <form id="update-student-form">
                                 {% csrf_token %}
                                 <div class="modal-header">
                                     <h5 class="modal-title" id="update-student-modal-label">Update Student</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
-                                            aria-label="Close"></button>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                                 </div>
                                 <div class="modal-body">
-                                    <div class="form-group row">
-                                        <label for="update-id">Id</label>
+                                    <div class="mb-3">
+                                        <label for="update-id" class="form-label">Id</label>
                                         <input type="number" class="form-control" name="id" id="update-id" required>
                                     </div>
-                                    <div class="form-group row">
-                                        <label for="update-fname">First Name</label>
+                                    <div class="mb-3">
+                                        <label for="update-fname" class="form-label">First Name</label>
                                         <input type="text" class="form-control" name="fname" id="update-fname" required>
                                     </div>
-                                    <div class="form-group row">
-                                        <label for="update-lname">Last Name</label>
+                                    <div class="mb-3">
+                                        <label for="update-lname" class="form-label">Last Name</label>
                                         <input type="text" class="form-control" name="lname" id="update-lname" required>
                                     </div>
-                                    <div class="form-group row">
-                                        <label for="update-year">Year</label>
+                                    <div class="mb-3">
+                                        <label for="update-year" class="form-label">Year</label>
                                         <input type="number" class="form-control" name="year" id="update-year" required>
                                     </div>
-                                    <div class="form-group row">
-                                        <label for="update-course">Course</label>
-                                        <input type="text" class="form-control" name="course" id="update-course"
-                                               required>
+                                    <div class="mb-3">
+                                        <label for="update-course" class="form-label">Course</label>
+                                        <input type="text" class="form-control" name="course" id="update-course" required>
                                     </div>
                                 </div>
                                 <div class="modal-footer">
                                     <button type="submit" class="btn btn-primary">Save changes</button>
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close
-                                    </button>
+                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                                     <input type="hidden" id="update-student-key">
                                 </div>
                             </form>
                         </div>
                     </div>
                 </div>
+                
 
             </div>
         </div>
