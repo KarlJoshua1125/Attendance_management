@@ -15,16 +15,13 @@ def connectDB():
         })
     dbconn = db.reference("StudentsList")
     attendance_ref = db.reference("Attendance")
-    return attendance_ref, dbconn
-
-
-def homepage(request):
-    return render(request, 'homepage.html')
+    section_ref = db.reference("Sections")
+    return attendance_ref, dbconn, section_ref
 
 
 def index(request):
     students = []
-    attendance_ref, dbconn = connectDB()
+    attendance_ref, dbconn,_ = connectDB()
     tblStudents = dbconn.get()
     print(tblStudents)
     for key, value in tblStudents.items():
@@ -32,8 +29,20 @@ def index(request):
                          "year": int(value["Year"]), "course": value["Course"], "key": key})
     return render(request, 'index.html', {'students': students})
 
+def homepage(request):
+    return render(request, homepage.html)
+
+def sections(request):
+    sections = []
+    attendance_ref, dbconn, section_ref = connectDB()
+    tblSections = section_ref.get()
+    print(tblSections)
+    for key, value in tblSections.items():
+        sections.append({"section": value["section"], "key": key})
+    return render(request, 'sections.html', {'sections': sections})
+
 def attendance(request):
-    attendance_ref, dbconn = connectDB()
+    attendance_ref, dbconn, _ = connectDB()
     students = dbconn.get()
     dateInput = request.GET.get('date')
 
@@ -93,7 +102,17 @@ def deletestudent(request, id):
     delitem.delete()
     return redirect('index')
 
+def update_section(request):
+    if request.headers.get('x-requested-with') == 'XMLHttpRequest' and request.method == 'POST':
+        id = request.POST.get('section')
+        key = request.POST.get('key')
+        _,_,section_ref = connectDB()
+        section_ref.child(key).update({"section": id})
 
+        return JsonResponse({'status': 'success'})
+    else:
+
+        return JsonResponse({'status': 'errors', 'errors': 'Unable to update section.'})
 def update_student(request):
     if request.headers.get('x-requested-with') == 'XMLHttpRequest' and request.method == 'POST':
         id = int(request.POST.get('id'))
@@ -102,16 +121,19 @@ def update_student(request):
         year = int(request.POST.get('year'))
         course = request.POST.get('course')
         key = request.POST.get('key')
-        attendance_ref, dbconn = connectDB()
+        attendance_ref, dbconn,_ = connectDB()
         dbconn.child(key).update({"ID": id, "FirstName": fname, "LastName": lname, "Year": year, "Course": course})
 
         return JsonResponse({'status': 'success'})
     else:
 
         return JsonResponse({'status': 'errors', 'errors': 'Unable to update student.'})
-
-
 def search_students(request):
     query = request.GET.get('query', '')
     students = students.objects.filter(lname__icontains=query)
     return render(request, 'index.html', {'students': students})
+
+def search_section(request):
+    query = request.GET.get('query', '')
+    sections = sections.objects.filter(section__icontains=query)
+    return render(request, 'sections.html', {'sections': sections})
