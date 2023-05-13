@@ -82,7 +82,7 @@ def update_attendance(request):
         attendanceStatus = request.POST.get('attendanceStatus')
         attendanceKey = request.POST.get('attendanceKey')
         dateInput = request.POST.get('dateInput')
-        attendance_ref, dbconn = connectDB()
+        attendance_ref, _, _ = connectDB()
         attendance_ref.child(dateInput).child(attendanceKey).update({"Attendance": attendanceStatus})
 
         return JsonResponse({'status': 'success'})
@@ -121,7 +121,7 @@ def update_student(request):
         year = int(request.POST.get('year'))
         course = request.POST.get('course')
         key = request.POST.get('key')
-        attendance_ref, _, _ = connectDB()
+        attendance_ref, dbconn,_ = connectDB()
         dbconn.child(key).update({"ID": id, "FirstName": fname, "LastName": lname, "Year": year, "Course": course})
 
         return JsonResponse({'status': 'success'})
