@@ -23,313 +23,15 @@
     {% load static %}
     <script type="text/javascript" src="{% static '/js/firebaseConfig.js' %}"></script>
     <script type="text/javascript" src="{% static '/js/date.js' %}"></script>
-    <script>
-
-        $(document).ready(function () {
-            $( ".btn-lg" ).click(function() {
-             $(this).toggleClass('btn-success');
-             $(this).toggleClass('btn-danger'); // Add this line
-        });
-            $('#sort-by-name-button').on('click', function() {
-                var rows = $('#students-table tbody tr').get();
-                rows.sort(function(row1, row2) {
-                    var lname1 = $(row1).data('lname');
-                    var lname2 = $(row2).data('lname');
-                    return lname1.localeCompare(lname2);
-                });
-                $.each(rows, function(index, row) {
-                    $('#students-table tbody').append(row);
-                });
-            });
-
-
- // Remove the click event handler for the search button
- $('#search-button').off('click');
-
- $('#search-input').on('input', function() {
-   var searchTerm = $(this).val().toLowerCase();
-   $('#students-table tbody tr').each(function() {
-     var name = $(this).find('.lname').text().toLowerCase();
-     if (name.indexOf(searchTerm) === -1) {
-       $(this).hide();
-     } else {
-       $(this).show();
-     }
-   });
- });
-
- $('#clear-button').on('click', function() {
-   $('#search-input').val('');
-   $('#students-table tbody tr').show();
- });
-
-            $('#sort-button').on('click', function() {
-                var $table = $('#students-table');
-                var $tbody = $table.find('tbody');
-                var $rows = $tbody.find('tr');
-                $rows.sort(function(a, b) {
-                    var lnameA = $(a).find('.lname').text().toLowerCase();
-                    var lnameB = $(b).find('.lname').text().toLowerCase();
-                    if (lnameA < lnameB) return -1;
-                    if (lnameA > lnameB) return 1;
-                    return 0;
-                });
-                $tbody.html($rows);
-              });
-
-              $('#sort-buttonid').on('click', function() {
-                var $table = $('#students-table');
-                var $tbody = $table.find('tbody');
-                var $rows = $tbody.find('tr');
-                $rows.sort(function(a, b) {
-                    var idA = $(a).find('.id').text().toLowerCase();
-                    var idB = $(b).find('.id').text().toLowerCase();
-                    if (idA < idB) return -1;
-                    if (idA > idB) return 1;
-                    return 0;
-                });
-                $tbody.html($rows);
-              });
-
-
-
-            $('#add-student').on('submit', function (e) {
-                e.preventDefault();
-
-                var id = parseInt($('#id').val());
-                var fname = $('#fname').val();
-                var lname = $('#lname').val();
-                var year = parseInt($('#year').val());
-                var course = $('#course').val();
-
-                database.ref('StudentsList').push({
-                    ID: id,
-                    FirstName: fname,
-                    LastName: lname,
-                    Year: year,
-                    Course: course
-                }).then(function () {
-                    $('#exampleModal').modal('hide');
-                    location.reload();
-                }).catch(function (error) {
-                    console.error(error);
-                });
-            });
-
-            $('#add-student-btn').on('click', function () {
-                $('#exampleModal').modal('show');
-            });
-
-            $('.edit-student').on('click', function (e) {
-                e.preventDefault();
-
-                var studentKey = $(this).data('key');
-
-                database.ref('StudentsList').child(studentKey).once('value', function (snapshot) {
-                    var student = snapshot.val();
-
-                    $('#update-id').val(student.ID);
-                    $('#update-fname').val(student.FirstName);
-                    $('#update-lname').val(student.LastName);
-                    $('#update-year').val(student.Year);
-                    $('#update-course').val(student.Course);
-                    $('#update-student-key').val(studentKey);
-
-                    $('#update-student-modal').modal('show');
-                });
-            });
-
-            $('#update-student-form').on('submit', function (e) {
-                e.preventDefault();
-
-                var id = parseInt($('#update-id').val());
-                var fname = $('#update-fname').val();
-                var lname = $('#update-lname').val();
-                var year = parseInt($('#update-year').val());
-                var course = $('#update-course').val();
-                var key = $('#update-student-key').val();
-
-                $.ajax({
-                    url: '/update_student/',
-                    type: 'POST',
-                    data: {
-                        'id': id,
-                        'fname': fname,
-                        'lname': lname,
-                        'year': year,
-                        'course': course,
-                        'key': key,
-                        'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val(),
-                    },
-                    success: function (data) {
-                        if (data.status == 'success') {
-                            $('#update-student-modal').modal('hide');
-                            location.reload();
-                        } else {
-                            alert(data.errors);
-                        }
-                    },
-                    error: function (xhr, status, error) {
-                        console.error(xhr.responseText);
-                    }
-                });
-            });
-        });
-
-
-    </script>
-
+    <script type="text/javascript" src="{% static '/js/index.js' %}"></script>
+    <link rel="stylesheet" href="{% static '/css/index.css' %}"/>
 </head>
-
-<style>
-        /* Styles for the page header */
-        h2 {
-          font-size: 36px;
-          margin-top: 20px;
-          margin-bottom: 40px;
-          text-align: center;
-        }
-      
-        /* Styles for the search and sort buttons */
-        .row.mb-5 button {
-          margin-right: 10px;
-        }
-      
-        /* Styles for the "Add New Student" button */
-        #add-student-btn {
-          margin-bottom: 20px;
-        }
-      
-        /* Styles for the student table */
-        #students-table th {
-          text-align: center;
-          font-size: 18px;
-        }
-      
-        #students-table td {
-          text-align: center;
-          font-size: 16px;
-        }
-      
-        /* Styles for the "Edit" and "Delete" buttons in the student table */
-        .edit-student,
-        .btn-danger {
-          padding: 5px 10px;
-          margin-right: 5px;
-          font-size: 14px;
-          text-decoration: none;
-          color: #fff;
-        }
-      
-        .edit-student {
-          background-color: #28a745;
-          border-color: #28a745;
-        }
-      
-        .edit-student:hover {
-          background-color: #218838;
-          border-color: #1e7e34;
-        }
-      
-        .btn-danger {
-          background-color: #dc3545;
-          border-color: #dc3545;
-        }
-      
-        .btn-danger:hover {
-          background-color: #c82333;
-          border-color: #bd2130;
-        }
-
- /* Add your custom CSS styles here */
-    .modal-title {
-        color: #333;
-        font-size: 18px;
-        font-weight: bold;
-    }
-
-    .form-label {
-        font-weight: bold;
-    }
-
-    .btn-primary {
-        background-color: #007bff;
-        border-color: #007bff;
-    }
-
-    .btn-primary:hover {
-        background-color: #0069d9;
-        border-color: #0062cc;
-    }
-
-    .btn-secondary {
-        background-color: #6c757d;
-        border-color: #6c757d;
-    }
-
-    .btn-secondary:hover {
-        background-color: #5a6268;
-        border-color: #545b62;
-    }
-
-
-    .modal-content {
-        background-color: #f8f9fa;
-        border-radius: 8px;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-    }
-
-    .modal-header {
-        color: #fff;
-        padding: 10px 20px;
-        border-top-left-radius: 8px;
-        border-top-right-radius: 8px;
-    }
-
-    .modal-title {
-        font-size: 20px;
-        font-weight: bold;
-        margin: 0;
-    }
-
-    .modal-body {
-        padding: 20px;
-    }
-
-    .form-group {
-        margin-bottom: 15px;
-    }
-
-    .form-group label {
-        font-weight: bold;
-        margin-bottom: 5px;
-    }
-
-    .form-control {
-        border: 1px solid #ced4da;
-        border-radius: 4px;
-        padding: 8px;
-        width: 100%;
-        transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
-    }
-
-    .form-control:focus {
-        border-color: #80bdff;
-        outline: 0;
-        box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
-    }
-
-</style>
-
 <body>
 <div class="container-fluid">
     <div class="row">
         <div class="col-sm-auto bg-light sticky-top">
-            <div class="d-flex flex-sm-column flex-row flex-nowrap bg-light align-items-center sticky-top">
-               
-                <ul class="nav nav-pills nav-flush flex-sm-column flex-row flex-nowrap mb-auto mx-auto text-center align-items-center">
-
-                    
+            <div class="d-flex flex-sm-column flex-row flex-nowrap bg-light align-items-center sticky-top">              
+                <ul class="nav nav-pills nav-flush flex-sm-column flex-row flex-nowrap mb-auto mx-auto text-center align-items-center">    
                     <li>
                         <a href="{% url 'index' %}" class="nav-link py-3 px-2" title="" data-bs-toggle="tooltip"
                            data-bs-placement="right" data-bs-original-title="Students">
@@ -337,13 +39,11 @@
                         </a>
                     </li>
                     <li>
-                        <a href="#" class="nav-link py-3 px-2" title="" data-bs-toggle="tooltip"
+                        <a href="{% url 'attendance' %}" class="nav-link py-3 px-2" title="" data-bs-toggle="tooltip"
                    data-bs-placement="right" data-bs-original-title="Attendance" onclick="redirectToAttendance()">
                             <i class="fas fa-calendar-alt fa-lg"></i>
                         </a>
-
                     </li>
-
                 </ul>
 
             </div>
@@ -482,9 +182,7 @@
                             </form>
                         </div>
                     </div>
-                </div>
-                
-
+                </div>               
             </div>
         </div>
     </div>

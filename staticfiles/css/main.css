@@ -1716,8 +1716,6 @@ img{
 		-webkit-align-items: center;
 		-ms-align-items: center;
 		align-items: center;
-		background-image: url("../bg.png");
-		display: -moz-flex;
 		display: -webkit-flex;
 		display: -ms-flex;
 		display: flex;
