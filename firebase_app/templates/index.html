@@ -43,24 +43,25 @@
             });
 
 
+ // Remove the click event handler for the search button
+ $('#search-button').off('click');
 
-            $('#search-button').on('click', function() {
-                var searchTerm = $('#search-input').val().toLowerCase();
-                $('#students-table tbody tr').each(function() {
-                  var name = $(this).find('.lname').text().toLowerCase();
-                  if (name.indexOf(searchTerm) === -1) {
-                    $(this).hide();
-                  } else {
-                    $(this).show();
-                  }
-                });
-              });
+ $('#search-input').on('input', function() {
+   var searchTerm = $(this).val().toLowerCase();
+   $('#students-table tbody tr').each(function() {
+     var name = $(this).find('.lname').text().toLowerCase();
+     if (name.indexOf(searchTerm) === -1) {
+       $(this).hide();
+     } else {
+       $(this).show();
+     }
+   });
+ });
 
-            $('#clear-button').on('click', function() {
-                $('#search-input').val('');
-                $('#students-table tbody tr').show();
-              });
-
+ $('#clear-button').on('click', function() {
+   $('#search-input').val('');
+   $('#students-table tbody tr').show();
+ });
 
             $('#sort-button').on('click', function() {
                 var $table = $('#students-table');
@@ -181,64 +182,64 @@
 </head>
 
 <style>
-  /* Styles for the page header */
-  h2 {
-    font-size: 36px;
-    margin-top: 20px;
-    margin-bottom: 40px;
-    text-align: center;
-  }
-
-  /* Styles for the search and sort buttons */
-  .row.mb-5 button {
-    margin-right: 10px;
-  }
-
-  /* Styles for the "Add New Student" button */
-  #add-student-btn {
-    margin-bottom: 20px;
-  }
-
-  /* Styles for the student table */
-  #students-table th {
-    text-align: center;
-    font-size: 18px;
-  }
-
-  #students-table td {
-    text-align: center;
-    font-size: 16px;
-  }
-
-  /* Styles for the "Edit" and "Delete" buttons in the student table */
-  .edit-student,
-  .btn-danger {
-    padding: 5px 10px;
-    margin-right: 5px;
-    font-size: 14px;
-    text-decoration: none;
-    color: #fff;
-  }
-
-  .edit-student {
-    background-color: #28a745;
-    border-color: #28a745;
-  }
-
-  .edit-student:hover {
-    background-color: #218838;
-    border-color: #1e7e34;
-  }
-
-  .btn-danger {
-    background-color: #dc3545;
-    border-color: #dc3545;
-  }
-
-  .btn-danger:hover {
-    background-color: #c82333;
-    border-color: #bd2130;
-  }
+        /* Styles for the page header */
+        h2 {
+          font-size: 36px;
+          margin-top: 20px;
+          margin-bottom: 40px;
+          text-align: center;
+        }
+      
+        /* Styles for the search and sort buttons */
+        .row.mb-5 button {
+          margin-right: 10px;
+        }
+      
+        /* Styles for the "Add New Student" button */
+        #add-student-btn {
+          margin-bottom: 20px;
+        }
+      
+        /* Styles for the student table */
+        #students-table th {
+          text-align: center;
+          font-size: 18px;
+        }
+      
+        #students-table td {
+          text-align: center;
+          font-size: 16px;
+        }
+      
+        /* Styles for the "Edit" and "Delete" buttons in the student table */
+        .edit-student,
+        .btn-danger {
+          padding: 5px 10px;
+          margin-right: 5px;
+          font-size: 14px;
+          text-decoration: none;
+          color: #fff;
+        }
+      
+        .edit-student {
+          background-color: #28a745;
+          border-color: #28a745;
+        }
+      
+        .edit-student:hover {
+          background-color: #218838;
+          border-color: #1e7e34;
+        }
+      
+        .btn-danger {
+          background-color: #dc3545;
+          border-color: #dc3545;
+        }
+      
+        .btn-danger:hover {
+          background-color: #c82333;
+          border-color: #bd2130;
+        }
 
  /* Add your custom CSS styles here */
     .modal-title {
@@ -358,19 +359,12 @@
                         <input type="text" class="form-control" id="search-input" placeholder="Search by Last Name">
                     </div>
                     <div class="col-sm-2">
-
-                        <button class="btn btn-primary" id="search-button">Search</button>
-                        <button class="btn btn-danger" id="clear-button">Clear</button>
+                        <div class="d-flex flex-column">
+                            <button class="btn btn-secondary mb-2" id="sort-button">Sort by Last Name</button>
+                            <button class="btn btn-secondary" id="sort-buttonid">Sort by ID</button>
+                        </div>
                     </div>
-                    <div class="col-sm-2">
-                        <button class="btn btn-secondary" id="sort-button">Sort by Last Name</button>
-                    </div>
-                    <div class="col-sm-2">
-                        <button class="btn btn-secondary" id="sort-buttonid">Sort by ID</button>
-                    </div>
-
                 </div>
-
                 <button type="button" class="btn btn-primary" id="add-student-btn">Add New Student</button>
                 <table class="table table-striped" id="students-table">
                     <thead>
@@ -378,6 +372,7 @@
                         <th >ID</th>
                         <th>First Name</th>
                         <th>Last Name</th>
+                        <th>Section</th>
                         <th>Year</th>
                         <th>Course</th>
                         <th>Actions</th>
@@ -389,6 +384,7 @@
                         <td class="id">{{ student.id }}</td>
                         <td class="fname">{{ student.fname }}</td>
                         <td class="lname">{{ student.lname }}</td>
+                        <td class="section"{{ student.section}}></td>
                         <td class="year">{{ student.year }}</td>
                         <td class="course">{{ student.course }}</td>
                         <td>

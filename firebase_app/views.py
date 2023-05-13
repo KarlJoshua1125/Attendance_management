@@ -18,6 +18,10 @@ def connectDB():
     return attendance_ref, dbconn
 
 
+def homepage(request):
+    return render(request, 'homepage.html')
+
+
 def index(request):
     students = []
     attendance_ref, dbconn = connectDB()
