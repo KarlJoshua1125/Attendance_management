@@ -121,7 +121,7 @@ def update_student(request):
         year = int(request.POST.get('year'))
         course = request.POST.get('course')
         key = request.POST.get('key')
-        attendance_ref, dbconn,_ = connectDB()
+        attendance_ref, _, _ = connectDB()
         dbconn.child(key).update({"ID": id, "FirstName": fname, "LastName": lname, "Year": year, "Course": course})
 
         return JsonResponse({'status': 'success'})
