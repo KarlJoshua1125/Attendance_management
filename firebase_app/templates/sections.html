@@ -142,6 +142,28 @@
                 });
             });
         });
+        document.addEventListener("DOMContentLoaded", function () {
+            const sidebarToggle = document.getElementById("sidebar-toggle");
+            const studentsLink = document.getElementById("students-link");
+            const attendanceLink = document.getElementById("attendance-link");
+            const sectionLink = document.getElementById("section-link");
+            ;
+    
+            // Hide attendance and students sections by default
+            studentsLink.classList.add("d-none");
+            attendanceLink.classList.add("d-none");
+            sectionLink.classList.add("d-none");
+    
+    
+            // Event listener for sidebar toggle button
+            sidebarToggle.addEventListener("click", function () {
+                // Toggle the visibility of students and attendance sections
+                studentsLink.classList.toggle("d-none");
+                attendanceLink.classList.toggle("d-none");
+                sectionLink.classList.toggle("d-none");
+    
+            });
+        });
 
 
     </script>
@@ -211,9 +233,56 @@
 </style>
 
 <body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <button class="btn btn-link" id="sidebar-toggle" aria-label="Toggle Sidebar">
+            <i class="fas fa-bars fa-lg"></i>
+        </button>
+        
+        <div class="container">
+            
+            <a class="navbar-brand" href="#">Attendance Monitoring System</a>
+            
+            <div class="ml-auto">
+                <form class="form-inline">
+                    <div class="input-group">
+                       
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </nav>
 <div class="container-fluid">
     <div class="row">
-        {% include "nav.html" %}
+        <div class="col-sm-auto bg-light sticky-top">
+            <div class="d-flex flex-sm-column flex-row flex-nowrap bg-light align-items-center sticky-top">
+              
+                <ul class="nav nav-pills nav-flush flex-sm-column flex-row flex-nowrap mb-auto mx-auto text-center align-items-center">
+                    <li class="nav-item">
+                        <a href="#" class="nav-link py-3 px-2" title="" data-bs-toggle="tooltip"
+                            data-bs-placement="right" data-bs-original-title="Students" id="students-link">
+                            <i class="fas fa-users fa-lg"></i>
+                            <p>Students</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="#" class="nav-link py-3 px-2" title="" data-bs-toggle="tooltip"
+                            data-bs-placement="right" data-bs-original-title="Attendance" id="attendance-link">
+                            <i class="fas fa-calendar-alt fa-lg"></i>
+                            <p>Attendance</p>
+                        </a>
+                    </li>
+                    <li>
+                        <a href="{% url 'sections' %}" class="nav-link py-3 px-2" title="" data-bs-toggle="tooltip"
+                            data-bs-placement="right" data-bs-original-title="Sections" id="section-link">
+                            <i class="fa-solid fa-school"></i>
+                            <p>Sections</p>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        
         <div class="col-sm p-3 min-vh-100">
             <!-- content -->
 

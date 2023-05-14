@@ -18,6 +18,9 @@
 		<script src="{% static '/js/firebaseConfig.js' %}" type="text/javascript"></script>
 		<link href="{% static '/css/btn.css' %}" rel="stylesheet">
 		<script type="text/javascript" src="{% static '/js/date.js' %}"></script>
+		<script type="text/javascript" src="{% static '/js/attendance.js' %}"></script>
+		<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
 		<script>
 			var database = firebase.database();
 
@@ -76,7 +79,51 @@
 
 			  });
 			});
-
+			$(document).ready(function() {
+				// Retrieve attendance data from the server or define it manually
+				var attendanceData = [
+				  {% for att in attendance %}
+				  {
+					label: "{{ att.att_name }}",
+					value: "{{ att.attendance }}"
+				  },
+				  {% endfor %}
+				];
+			
+				// Prepare data for the chart
+				var presentCount = attendanceData.filter(function(data) {
+				  return data.value === 'present';
+				}).length;
+				var lateCount = attendanceData.filter(function(data) {
+				  return data.value === 'late';
+				}).length;
+				var absentCount = attendanceData.filter(function(data) {
+				  return data.value === 'absent';
+				}).length;
+			
+				var chartData = {
+				  labels: ['Present', 'Late', 'Absent'],
+				  datasets: [{
+					data: [presentCount, lateCount, absentCount],
+					backgroundColor: ['#28a745', '#ffc107', '#dc3545']
+				  }]
+				};
+			
+				// Create the chart
+				var ctx = document.getElementById('attendanceChart').getContext('2d');
+				new Chart(ctx, {
+				  type: 'doughnut',
+				  data: chartData,
+				  options: {
+					responsive: true,
+					maintainAspectRatio: false, // Adjusts the chart size to fit its container
+				legend: {
+					position: 'bottom'
+				}
+				  }
+				});
+			  });
+		
 		</script>
 	</head>
 
@@ -118,6 +165,17 @@
 			background-color: #007bff;
 			color: #fff;
 		}
+		.container {
+			position: relative;
+		  }
+		  
+		  #attendanceChart {
+			width: 250px;
+			height: 250px;
+			position: absolute;
+			top: 0;
+			right: 0;
+		  }
 	</style>
 	
 	<body>
@@ -126,63 +184,91 @@
 				{% include "nav.html" %}
 				<div class="col-sm p-3 min-vh-100">
 					<!-- content -->
-					<div class="container" >
+					<div class="container">
 						<h2 class="py-2">Attendance</h2>
 						<h1 class="test" id="test"></h1>
-						<form class="row" method="GET"  id="my-form" action="{% url 'attendance' %}">
+						<form class="row" method="GET" id="my-form" action="{% url 'attendance' %}">
 							<label class="col-1 col-form-label" for="date">Date</label>
 							<div class="col-5">
 								<div class="input-group date">
 									<input class="form-control" id="date" name="date" type="date">
 								</div>
 							</div>
+							<div class="col-2 d-flex align-items-center justify-content-end">
+								<button type="button" class="btn btn-primary btn-lg" data-bs-toggle="modal" data-bs-target="#myModal">
+									View Report
+								</button>
+								
+							</div>
+							<div class="col-2 d-flex align-items-center justify-content-end">
+								
+								<button type="button" class="btn btn-danger" id="resetButton" onclick="resetData()">Reset Data</button>
+							</div>
 						</form>
-						<div class="card-grid pt-4" >
+						<!-- Modal -->
+						<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+							<div class="modal-dialog modal-dialog-centered" role="document">
+								<div class="modal-content">
+									<div class="modal-header">
+										<h5 class="modal-title" id="exampleModalLabel">Report <span id="selectedDate"></h5>
+										<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+									</div>
+									<div class="modal-body">
+										<div class="d-flex justify-content-center align-items-center" style="height: 250px;">
+											<canvas id="attendanceChart"></canvas>
+										</div>
+									</div>
+									<div class="modal-footer">
+										<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+									</div>
+									</div>
+								</div>
+							</div>
+						
+						
+						<div class="card-grid pt-4">
 							<div class="row row-cols-2 row-cols-md-2 row-cols-lg-3 g-4 align-items-stretch" id="card-containers">
 								<!-- Firebase data will be dynamically added here -->
 								{% for att in attendance %}
-								<div class="col" style="width:15rem;" >
+								<div class="col" style="width:15rem;">
 									<div class="card h-100">
 										{% load static %}
-										<img alt="Person placeholder" class="card-img-top img-thumbnail rounded-circle"
-											src="{% static 'person.png' %}" style="width:300px; border:none">
+										<img alt="Person placeholder" class="card-img-top img-thumbnail rounded-circle" src="{% static 'person.png' %}" style="width:300px; border:none">
 										<div class="card-body text-center">
 											<h5 class="card-title studentName">{{ att.att_name }}</h5>
 											<!-- Student name that will be retrieved from firebase -->
 											<div class="card-text">
-
 												<form id="{{ att.att_name }}_attendance_form">
 													{% csrf_token %}
-													<input type="hidden" name="{{ att.att_IDname }}_attendance" id="{{ att.att_IDname }}_attendance" value="{{ att.attendance}}">
+													<input type="hidden" name="{{ att.att_IDname }}_attendance" id="{{ att.att_IDname }}_attendance" value="{{ att.attendance }}">
 													<input type="hidden" name="{{ att.att_IDname }}_key" id="{{ att.att_IDname }}_key">
-													<input  data-key="{{ att.key }}" autocomplete="off" class="btn-check btn-circle btn-lg attendance"
+													<input data-key="{{ att.key }}" autocomplete="off" class="btn-check btn-circle btn-lg attendance"
 													id="{{ att.att_IDname }}_Present"
-													name="{{ att.att_IDname }}_options" type="radio" value="present" {% if att.attendance == 'present' %}checked{% endif %} >
-													<label class="btn btn-success btn-circle btn-xl"
-														for="{{ att.att_IDname }}_Present">P</label>
-													<input data-key="{{ att.key }}" autocomplete="off" class="btn-check btn-circle btn-lg attendance"
+													name="{{ att.att_IDname }}_options" type="radio" value="present" {% if att.attendance == 'present' %}checked{% endif %}>
+												<label class="btn btn-success btn-circle btn-xl"
+													for="{{ att.att_IDname }}_Present">P</label>
+												<input data-key="{{ att.key }}" autocomplete="off" class="btn-check btn-circle btn-lg attendance"
 													id="{{ att.att_IDname }}_Late"
-													name="{{ att.att_IDname }}_options" type="radio" value="late" {% if att.attendance == 'late' %}checked{% endif %} }>
-													<label class="btn btn-warning btn-circle btn-xl"
-														for="{{ att.att_IDname }}_Late">L</label>
-													<input data-key="{{ att.key }}" autocomplete="off" class="btn-check btn-circle btn-lg attendance"
+													name="{{ att.att_IDname }}_options" type="radio" value="late" {% if att.attendance == 'late' %}checked{% endif %}>
+												<label class="btn btn-warning btn-circle btn-xl"
+													for="{{ att.att_IDname }}_Late">L</label>
+												<input data-key="{{ att.key }}" autocomplete="off" class="btn-check btn-circle btn-lg attendance"
 													id="{{ att.att_IDname }}_Absent"
-													name="{{ att.att_IDname }}_options" type="radio" value="absent" {% if att.attendance == 'absent' %}checked{% endif %} >
-													<label class="btn btn-danger btn-circle btn-xl"
-														for="{{ att.att_IDname }}_Absent">A</label>
-												</form>
-											</div>
+													name="{{ att.att_IDname }}_options" type="radio" value="absent" {% if att.attendance == 'absent' %}checked{% endif %}>
+												<label class="btn btn-danger btn-circle btn-xl"
+													for="{{ att.att_IDname }}_Absent">A</label>
+											</form>
 										</div>
 									</div>
 								</div>
-								<script>
-									$('input[type=radio][name={{ att.att_IDname }}_options]').change(function() {
+							</div>
+							<script>
+								$('input[type=radio][name={{ att.att_IDname }}_options]').change(function() {
 									var attendanceKey = $(this).data('key');
 
 									database.ref("Attendance/" + dateInput).child(attendanceKey).once('value', function(snapshot) {
 										$('#{{ att.att_IDname }}_key').val(attendanceKey);
 									});
-
 
 									// Get the value of the selected radio button
 									var choice = $(this).val();
@@ -199,7 +285,6 @@
 									console.log('attendanceStatus:', this);
 									$('#{{ att.att_name }}_attendance_form').submit();
 
-
 									$.ajax({
 										url: '/update_attendance/',
 										type: 'POST',
@@ -214,16 +299,16 @@
 												$('#update-student-modal').modal('hide');
 												location.reload();
 											} else {
-												alert(data.errors);
+												console.log('Error:', data.message);
 											}
 										},
-										error: function(xhr, status, error) {
-											console.error(xhr.responseText);
+										error: function(jqXHR, textStatus, errorThrown) {
+											console.log('Error:', errorThrown);
 										}
 									});
 								});
+								
 								</script>
-
 								{% endfor %}
 							</div>
 						</div>
@@ -232,4 +317,5 @@
 			</div>
 		</div>
 	</body>
+	
 </html>

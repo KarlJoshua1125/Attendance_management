@@ -1,4 +1,3 @@
-
 $(document).ready(function () {
     $( ".btn-lg" ).click(function() {
      $(this).toggleClass('btn-success');
