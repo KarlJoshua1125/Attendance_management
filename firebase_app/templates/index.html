@@ -257,7 +257,13 @@
                                         <div class="card bg-dark shadow-2-strong">
                                             <div class="card-body">
 
-                                                <div class="h2 font-weight-bold">Students List</div>
+                                                <div class="h2 font-weight-bold">Students List
+                                                 <select class="btn btn-secondary btn-sm ms-2" name="sectionSort" id="sectionSort">
+                                                    <option selected disabled>Sort by Section</option>
+                                                    {% for sections in sections %}
+                                                     <option>{{ sections.section }}</option>
+                                                    {% endfor %}
+                                                    </select></div>
                                                 <div class="d-flex flex-row justify-content-end">
                                                     <button type="button" class="btn btn-success btn-sm me-2"
                                                         id="add-student-btn" style="height: 35px;">
@@ -267,6 +273,7 @@
                                                         style="height: 35px;">
                                                         <i class="fas fa-sort"></i> Sort by Last Name
                                                     </button>
+
 
                                                 </div>
                                                 <div class="table-responsive">
@@ -279,6 +286,7 @@
                                                                 <th scope="col">Last Name</th>
                                                                 <th scope="col">Year</th>
                                                                 <th scope="col">Course</th>
+                                                                <th scope="col">Section</th>
                                                                 <th scope="col">Actions</th>
                                                             </tr>
                                                         </thead>
@@ -290,6 +298,7 @@
                                                                 <td class="lname">{{ student.lname }}</td>
                                                                 <td class="year">{{ student.year }}</td>
                                                                 <td class="course">{{ student.course }}</td>
+                                                                <td class="course">{{ student.section }}</td>
                                                                 <td>
                                                                     <a href="#" class="edit-student btn btn-primary"
                                                                         data-key="{{ student.key }}"
@@ -332,11 +341,11 @@
                                 <div class="form-group-row d-flex flex-align-center justify-content-center">
                                     {%load static%}
                                     <img src="{% static 'person.png' %}" alt="" class="img-thumbnail rounded"
-                                        id="imgPreview" style="width: 200px; height:200px;" />
+                                        id="imgPreview" style="width: 200px; height:200px;"   onchange="previewImage()"/>
                                 </div>
                                 <form id="add-student">
                                     <div class="form-group row">
-                                        <label for="img">Add Image</label>
+                                        <label for="files">Add Image</label>
                                         <input type="file" class="form-control" name="files[]" id="files"
                                             accept=".jpg, .jpeg, .png">
                                         <input type="hidden" name="url" id="url">
@@ -360,6 +369,17 @@
                                     <div class="form-group row">
                                         <label for="course">Course</label>
                                         <input type="text" class="form-control" name="course" id="course" required>
+                                    </div>
+
+                                    <div class="form-group row">
+                                        <label for="section">Section</label>
+                                        <select class="form-control" name="section" id="section" required>
+                                            <option selected disabled>Select a section</option>
+                                            {% for sections in sections %}
+                                             <option>{{ sections.section }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <input type="hidden" class="form-control" id="sectionField" name="sectionField" value="no-section" required>
                                     </div>
                                     <button type="submit" class="btn btn-primary">Submit</button>
                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close
@@ -418,65 +438,36 @@
             </div>
         </div>
     </div>
-    </div>
 
-    <script>
+<script>
+  var selectField = document.querySelector('#section');
+  var textField = document.querySelector('#sectionField');
 
+  selectField.addEventListener('change', function() {
+    textField.value = selectField.value;
+  });
+</script>
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyAfZpmh_0mAciVBKlPS3UWtuNa70jb6EOU",
-            authDomain: "studentmanagement-84271.firebaseapp.com",
-            databaseURL: "https://studentmanagement-84271-default-rtdb.firebaseio.com",
-            projectId: "studentmanagement-84271",
-            storageBucket: "studentmanagement-84271.appspot.com",
-            messagingSenderId: "836487783337",
-            appId: "1:836487783337:web:e50d36b7f8c245deaddab8",
-            measurementId: "G-SWRTK8HFF6"
-        };
+<script>
+  var fileInput = document.querySelector('#files');
+  fileInput.addEventListener('change', function() {
+    previewImage();
+  });
 
-        firebase.initializeApp(firebaseConfig);
+  function previewImage() {
+    var preview = document.querySelector('#imgPreview');
+    var file = document.querySelector('#files').files[0];
+    var reader = new FileReader();
 
-        const storage = firebase.storage();
+    reader.addEventListener('load', function () {
+      preview.src = reader.result;
+    }, false);
 
-        const imageInput = document.getElementById('files');
-        const previewImage = document.getElementById('imgPreview');
-        const storageRef = storage.ref();
-
-        imageInput.addEventListener('change', function (event) {
-            const file = event.target.files[0];
-
-            if (file) {
-                const reader = new FileReader();
-
-                reader.addEventListener('load', function () {
-                    previewImage.src = reader.result;
-                });
-
-                reader.readAsDataURL(file);
-
-                // Upload the file to Firebase Storage
-                const fileName = file.name;
-                const fileRef = storageRef.child(fileName);
-
-                fileRef.put(file).then(function (snapshot) {
-                    console.log('File uploaded successfully!');
-                    // Get the download URL of the uploaded file
-                    fileRef.getDownloadURL().then(function (url) {
-                        document.getElementById('url').value = url;
-                    }).catch(function (error) {
-                        console.log(error);
-                    });
-                }).catch(function (error) {
-                    console.log(error);
-                });
-            }
-        });
-    </script>
-
-
-
-
-
+    if (file) {
+      reader.readAsDataURL(file);
+    }
+  }
+</script>
 </body>
 
 </html>
