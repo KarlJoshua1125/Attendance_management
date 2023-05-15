@@ -64,6 +64,20 @@ $('#students-table tbody tr').show();
         $tbody.html($rows);
       });
 
+$('#sectionSort').on('change', function() {
+    var selectedSection = $(this).val();
+
+    // hide all table rows
+    $('#students-table tbody tr').hide();
+
+    // show rows that match the selected section
+    if (selectedSection === '') {
+      $('#students-table tbody tr').show();
+    } else {
+      $('#students-table tbody tr td.course:contains("' + selectedSection + '")').parent('tr').show();
+    }
+  });
+
 
 
     $('#add-student').on('submit', function (e) {
@@ -74,13 +88,15 @@ $('#students-table tbody tr').show();
         var lname = $('#lname').val();
         var year = parseInt($('#year').val());
         var course = $('#course').val();
+        var section = $('#sectionField').val();
 
         database.ref('StudentsList').push({
             ID: id,
             FirstName: fname,
             LastName: lname,
             Year: year,
-            Course: course
+            Course: course,
+            Section: section,
         }).then(function () {
             $('#exampleModal').modal('hide');
             location.reload();
