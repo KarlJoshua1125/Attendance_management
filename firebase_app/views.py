@@ -5,7 +5,7 @@ import firebase_admin
 from firebase_admin import credentials, db
 from .forms import StudentForm
 from datetime import date
-
+import pyrebase
 from collections import Counter
 def connectDB():
     if not firebase_admin._apps:
@@ -91,7 +91,7 @@ def update_attendance(request):
 
 
 def deletestudent(request, id):
-    attendance_ref, dbconn = connectDB()
+    attendance_ref, dbconn, _ = connectDB()
     tblStudents = dbconn.get()
     for key, value in tblStudents.items():
         if value["ID"] == id:
@@ -136,4 +136,24 @@ def search_section(request):
     query = request.GET.get('query', '')
     sections = sections.objects.filter(section__icontains=query)
     return render(request, 'sections.html', {'sections': sections})
+
+def addstudent(request):
+    if request.method == 'POST':
+        form = StudentForm(request.POST, request.FILES)
+        if form.is_valid():
+            id = form.cleaned_data['id']
+            fname = form.cleaned_data['fname']
+            lname = form.cleaned_data['lname']
+            year = form.cleaned_data['year']
+            course = form.cleaned_data['course']
+            image = form.cleaned_data['image']
+            
+            # Save the student and image data to the database
+            # or perform any other required actions
+            
+            return redirect('index')
+    else:
+        form = StudentForm()
+
+    return render(request, 'addstudent.html', {'form': form})
 
