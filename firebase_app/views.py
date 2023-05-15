@@ -21,13 +21,30 @@ def connectDB():
 
 def index(request):
     students = []
-    attendance_ref, dbconn,_ = connectDB()
+    sections = []
+    _, dbconn, section_ref = connectDB()
     tblStudents = dbconn.get()
-    print(tblStudents)
+    tblSections = section_ref.get()
+
     for key, value in tblStudents.items():
-        students.append({"id": int(value["ID"]), "fname": value["FirstName"], "lname": value["LastName"],
-                         "year": int(value["Year"]), "course": value["Course"], "key": key})
-    return render(request, 'index.html', {'students': students})
+        students.append({
+            "id": int(value["ID"]),
+            "fname": value["FirstName"],
+            "lname": value["LastName"],
+            "year": int(value["Year"]),
+            "course": value["Course"],
+            "section": value["Section"],
+            "key": key
+        })
+
+    for key, value in tblSections.items():
+        sections.append({
+            "section": value["section"],
+            "key": key
+        })
+
+    return render(request, 'index.html', {'students': students, 'sections': sections})
+
 
 def homepage(request):
     return render(request, 'homepage.html')
@@ -137,23 +154,5 @@ def search_section(request):
     sections = sections.objects.filter(section__icontains=query)
     return render(request, 'sections.html', {'sections': sections})
 
-def addstudent(request):
-    if request.method == 'POST':
-        form = StudentForm(request.POST, request.FILES)
-        if form.is_valid():
-            id = form.cleaned_data['id']
-            fname = form.cleaned_data['fname']
-            lname = form.cleaned_data['lname']
-            year = form.cleaned_data['year']
-            course = form.cleaned_data['course']
-            image = form.cleaned_data['image']
-            
-            # Save the student and image data to the database
-            # or perform any other required actions
-            
-            return redirect('index')
-    else:
-        form = StudentForm()
 
-    return render(request, 'addstudent.html', {'form': form})
 
