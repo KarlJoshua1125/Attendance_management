@@ -56,19 +56,19 @@
     });
     document.addEventListener("DOMContentLoaded", function () {
         // ...
-    
+
         // Event listener for image upload
         const imageInput = document.getElementById('files');
         const storage = firebase.storage();
-    
+
         imageInput.addEventListener('change', function (event) {
             const file = event.target.files[0];
             const storageRef = storage.ref();
             const imagesRef = storageRef.child('images'); // Change 'images' to your desired folder name
-    
+
             if (file) {
                 const uploadTask = imagesRef.child(file.name).put(file);
-    
+
                 uploadTask.on('state_changed', null, function (error) {
                     // Handle upload error
                     console.error('Error uploading image:', error);
@@ -81,13 +81,40 @@
                 });
             }
         });
-    
+
         // ...
     });
-    
+
 
 </script>
 <style>
+    html,
+    body,
+    .intro {
+        height: 100%;
+    }
+
+    table td,
+    table th {
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        overflow: hidden;
+    }
+
+    thead th,
+    tbody th {
+        color: #fff;
+    }
+
+    tbody td {
+        font-weight: 500;
+        color: rgba(255, 255, 255, .65);
+    }
+
+    .card {
+        border-radius: .5rem;
+    }
+
     @import url('https://fonts.googleapis.com/css2?family=PT+Sans:wght@700&family=Poppins:wght@600&display=swap');
 
     * {
@@ -95,13 +122,13 @@
     }
 
     body {
-        background-color: #d9ecf2;
+        background-color: #242943;
         font-family: 'Poppins', sans-serif;
         color: #666;
     }
 
     .h2 {
-        color: #444;
+        color: #f1f1f1;
         font-family: 'PT Sans', sans-serif;
     }
 
@@ -221,57 +248,76 @@
             <div class="col-sm p-3 min-vh-100">
 
                 <!-- content -->
-                <div class="container rounded mt-5 bg-white p-md-5">
-                    <div class="h2 font-weight-bold">Students List</div>
-                    <div class="d-flex flex-row justify-content-end">
-                        <button type="button" class="btn btn-success btn-sm me-2" id="add-student-btn"
-                            style="height: 35px;">
-                            <i class="fas fa-plus"></i> Add Student
-                        </button>
-                        <button class="btn btn-secondary btn-sm mr-2" id="sort-button" style="height: 35px;">
-                            <i class="fas fa-sort"></i> Sort by Last Name
-                        </button>
+                <section class="intro">
+                    <div class="bg-image h-100">
+                        <div class="mask d-flex align-items-center h-100">
+                            <div class="container">
+                                <div class="row justify-content-center">
+                                    <div class="col-12">
+                                        <div class="card bg-dark shadow-2-strong">
+                                            <div class="card-body">
 
+                                                <div class="h2 font-weight-bold">Students List</div>
+                                                <div class="d-flex flex-row justify-content-end">
+                                                    <button type="button" class="btn btn-success btn-sm me-2"
+                                                        id="add-student-btn" style="height: 35px;">
+                                                        <i class="fas fa-plus"></i> Add Student
+                                                    </button>
+                                                    <button class="btn btn-secondary btn-sm mr-2" id="sort-button"
+                                                        style="height: 35px;">
+                                                        <i class="fas fa-sort"></i> Sort by Last Name
+                                                    </button>
+
+                                                </div>
+                                                <div class="table-responsive">
+                                                    <table class="table table-dark table-borderless mb-0"
+                                                        id="students-table">
+                                                        <thead>
+                                                            <tr>
+                                                                <th scope="col">ID</th>
+                                                                <th scope="col">First Name</th>
+                                                                <th scope="col">Last Name</th>
+                                                                <th scope="col">Year</th>
+                                                                <th scope="col">Course</th>
+                                                                <th scope="col">Actions</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {% for student in students %}
+                                                            <tr>
+                                                                <th scope="row" class="id">{{ student.id }}</th>
+                                                                <td class="fname">{{ student.fname }}</td>
+                                                                <td class="lname">{{ student.lname }}</td>
+                                                                <td class="year">{{ student.year }}</td>
+                                                                <td class="course">{{ student.course }}</td>
+                                                                <td>
+                                                                    <a href="#" class="edit-student btn btn-primary"
+                                                                        data-key="{{ student.key }}"
+                                                                        data-bs-toggle="modal"
+                                                                        data-bs-target="#update-student-modal">
+                                                                        <i class="fas fa-edit"></i>
+                                                                    </a>
+
+                                                                    <a class="btn btn-danger"
+                                                                        href='deletestudent/{{ student.id }}'>
+                                                                        <i class="fas fa-trash-alt"></i>
+                                                                    </a>
+                                                                </td>
+                                                            </tr>
+                                                            {% endfor %}
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
+                </section>
 
-                    <div class="table-responsive">
-                        <table class="table table-striped" id="students-table">
-                            <thead>
-                                <tr>
-                                    <th>ID</th>
-                                    <th>First Name</th>
-                                    <th>Last Name</th>
-                                    <th>Year</th>
-                                    <th>Course</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for student in students %}
-                                <tr>
-                                    <td class="id">{{ student.id }}</td>
-                                    <td class="fname">{{ student.fname }}</td>
-                                    <td class="lname">{{ student.lname }}</td>
 
-                                    <td class="year">{{ student.year }}</td>
-                                    <td class="course">{{ student.course }}</td>
-                                    <td>
-                                        <a href="#" class="edit-student btn btn-primary" data-key="{{ student.key }}"
-                                            data-bs-toggle="modal" data-bs-target="#update-student-modal">
-                                            <i class="fas fa-edit"></i>
-                                        </a>
-
-                                        <a class="btn btn-danger" href='deletestudent/{{ student.id }}'>
-                                            <i class="fas fa-trash-alt"></i>
-                                        </a>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
-
-                    </div>
-                </div>
                 <!-- Add Student Modal -->
                 <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
                     aria-hidden="true">
