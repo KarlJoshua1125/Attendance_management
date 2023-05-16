@@ -80,6 +80,7 @@ $('#sectionSort').on('change', function() {
 
 
 
+    
     $('#add-student').on('submit', function (e) {
         e.preventDefault();
         var id = parseInt($('#id').val());
