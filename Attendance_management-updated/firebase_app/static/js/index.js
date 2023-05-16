@@ -82,13 +82,14 @@ $('#sectionSort').on('change', function() {
 
     $('#add-student').on('submit', function (e) {
         e.preventDefault();
-
         var id = parseInt($('#id').val());
         var fname = $('#fname').val();
         var lname = $('#lname').val();
         var year = parseInt($('#year').val());
         var course = $('#course').val();
         var section = $('#sectionField').val();
+        var img= $('#imgURL').val();
+
 
         database.ref('StudentsList').push({
             ID: id,
@@ -97,6 +98,8 @@ $('#sectionSort').on('change', function() {
             Year: year,
             Course: course,
             Section: section,
+            imgURL: img,
+
         }).then(function () {
             $('#exampleModal').modal('hide');
             location.reload();

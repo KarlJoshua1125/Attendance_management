@@ -54,36 +54,43 @@
         });
 
     });
-    document.addEventListener("DOMContentLoaded", function () {
-        // ...
+document.addEventListener("DOMContentLoaded", function () {
+    // Event listener for image upload
+    const imageInput = document.getElementById('files');
+    const storage = firebase.storage();
+    const successMessage = document.getElementById('uploadSuccessMessage');
+    const imgURLInput = document.getElementById('imgURL');
 
-        // Event listener for image upload
-        const imageInput = document.getElementById('files');
-        const storage = firebase.storage();
+    imageInput.addEventListener('change', function (event) {
+        const file = event.target.files[0];
+        const storageRef = storage.ref();
+        const imagesRef = storageRef.child('images'); // Change 'images' to your desired folder name
 
-        imageInput.addEventListener('change', function (event) {
-            const file = event.target.files[0];
-            const storageRef = storage.ref();
-            const imagesRef = storageRef.child('images'); // Change 'images' to your desired folder name
+        if (file) {
+            const uploadTask = imagesRef.child(file.name).put(file);
 
-            if (file) {
-                const uploadTask = imagesRef.child(file.name).put(file);
+            uploadTask.on('state_changed', null, function (error) {
+                // Handle upload error
+                console.error('Error uploading image:', error);
+            }, function () {
+                // Handle successful upload
+                uploadTask.snapshot.ref.getDownloadURL().then(function (downloadURL) {
+                    // Save the download URL to your database or perform any other necessary action
+                    console.log('Image uploaded successfully. Download URL:', downloadURL);
 
-                uploadTask.on('state_changed', null, function (error) {
-                    // Handle upload error
-                    console.error('Error uploading image:', error);
-                }, function () {
-                    // Handle successful upload
-                    uploadTask.snapshot.ref.getDownloadURL().then(function (downloadURL) {
-                        // Save the download URL to your database or perform any other necessary action
-                        console.log('Image uploaded successfully. Download URL:', downloadURL);
-                    });
+                    // Set the image URL in the imgURL input field
+                    imgURLInput.value = downloadURL;
+
+                    // Display success message
+                    successMessage.textContent = 'Upload successful';
                 });
-            }
-        });
-
-        // ...
+            });
+        }
     });
+});
+
+
+
 
 
 </script>
@@ -215,35 +222,8 @@
 
 
         <div class="row">
-            <div class="col-sm-auto bg-dark sticky-top">
-                <div class="d-flex flex-sm-column flex-row flex-nowrap bg-dark align-items-center sticky-top">
-                    <ul
-                        class="nav nav-pills nav-flush flex-sm-column flex-row flex-nowrap mb-auto mx-auto text-center align-items-center">
-                        <li class="nav-item">
-                            <a href="{% url 'index' %}" class="nav-link py-3 px-2" title="" data-bs-toggle="tooltip"
-                                data-bs-placement="right" data-bs-original-title="Students" id="students-link">
-                                <i class="fas fa-users fa-lg"></i>
-                                <p>Students</p>
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a href="{% url 'attendance' %}" class="nav-link py-3 px-2" title=""
-                                data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Attendance"
-                                id="attendance-link">
-                                <i class="fas fa-calendar-alt fa-lg"></i>
-                                <p>Attendance</p>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="{% url 'sections' %}" class="nav-link py-3 px-2" title="" data-bs-toggle="tooltip"
-                                data-bs-placement="right" data-bs-original-title="Sections" id="section-link">
-                                <i class="fa-solid fa-school"></i>
-                                <p>Sections</p>
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </div>
+
+        {%include 'nav.html'%}
 
             <div class="col-sm p-3 min-vh-100">
 
@@ -341,7 +321,8 @@
                                 <div class="form-group-row d-flex flex-align-center justify-content-center">
                                     {%load static%}
                                     <img src="{% static 'person.png' %}" alt="" class="img-thumbnail rounded"
-                                        id="imgPreview" style="width: 200px; height:200px;"   onchange="previewImage()"/>
+                                        id="imgPreview" style="width: 200px; height:200px;"  onchange="previewImage()"/>
+
                                 </div>
                                 <form id="add-student">
                                     <div class="form-group row">
@@ -349,6 +330,7 @@
                                         <input type="file" class="form-control" name="files[]" id="files"
                                             accept=".jpg, .jpeg, .png">
                                         <input type="hidden" name="url" id="url">
+                                        <span id="uploadSuccessMessage" class="text-success"></span>
                                     </div>
                                     <div class="form-group row">
                                         <label for="id">Id</label>
@@ -380,6 +362,7 @@
                                             {% endfor %}
                                         </select>
                                         <input type="hidden" class="form-control" id="sectionField" name="sectionField" value="no-section" required>
+                                        <input type="hidden" class="form-control" name="imgURL" id="imgURL" value="no-image" required>
                                     </div>
                                     <button type="submit" class="btn btn-primary">Submit</button>
                                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close

@@ -1,0 +1,29 @@
+ <div class="col-sm-auto bg-dark sticky-top">
+                <div class="d-flex flex-sm-column flex-row flex-nowrap bg-dark align-items-center sticky-top">
+                    <ul
+                        class="nav nav-pills nav-flush flex-sm-column flex-row flex-nowrap mb-auto mx-auto text-center align-items-center">
+                        <li class="nav-item">
+                            <a href="{% url 'index' %}" class="nav-link py-3 px-2" title="" data-bs-toggle="tooltip"
+                                data-bs-placement="right" data-bs-original-title="Students" id="students-link">
+                                <i class="fas fa-users fa-lg"></i>
+                                <p>Students</p>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a href="{% url 'attendance' %}" class="nav-link py-3 px-2" title=""
+                                data-bs-toggle="tooltip" data-bs-placement="right" data-bs-original-title="Attendance"
+                                id="attendance-link" onclick="addDateToURL(event)">
+                                <i class="fas fa-calendar-alt fa-lg"></i>
+                                <p>Attendance</p>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{% url 'sections' %}" class="nav-link py-3 px-2" title="" data-bs-toggle="tooltip"
+                                data-bs-placement="right" data-bs-original-title="Sections" id="section-link">
+                                <i class="fa-solid fa-school"></i>
+                                <p>Sections</p>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>

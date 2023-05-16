@@ -59,7 +59,7 @@ def sections(request):
     return render(request, 'sections.html', {'sections': sections})
 
 def attendance(request):
-    attendance_ref, dbconn, _ = connectDB()
+    attendance_ref, dbconn, section_ref = connectDB()
     students = dbconn.get()
     dateInput = request.GET.get('date')
 
@@ -73,6 +73,17 @@ def attendance(request):
         student_list.append({
             'name': f"{student['FirstName']} {student['LastName']}",
             'id': student_key,
+            'section': f"{student['Section']}",
+            'img':f"{student['imgURL']}",
+        })
+
+    # Retrieve sections from the "Sections" collection
+    sections = section_ref.get()
+    section_list = []
+    for section_key in sections.keys():
+        section = sections[section_key]
+        section_list.append({
+            'section': section['section'],
         })
 
     attendance_list = []
@@ -83,6 +94,8 @@ def attendance(request):
             attendance_list.append({
                 'att_name': f"{att['Name']}",
                 'attendance': f"{att['Attendance']}",
+                'att_section': f"{att['Section']}",
+                'img': f"{att['Image']}",
                 'att_IDname': att_id,
                 'key': attendance_key
             })
@@ -90,7 +103,8 @@ def attendance(request):
     context = {
         'current_date': date.today().strftime("%Y-%m-%d"),
         'students': student_list,
-        'attendance': attendance_list
+        'attendance': attendance_list,
+        'sections': section_list,  # Add sections to the context
     }
     return render(request, 'attendance.html', context)
 
