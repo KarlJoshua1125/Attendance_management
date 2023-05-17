@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html dir="ltr" lang="en-US">
+   <head>
+      <title>Attendance</title>
+      <link crossorigin="anonymous" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+         rel="stylesheet">
+      <link crossorigin="anonymous" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"
+         integrity="sha384-DyZ88mC6Up2uqS4h/KRgHuoeGwBcD4Ng9SiP4dIRy0EXTlnuz47vAwmeGwVChigm" rel="stylesheet"/>
+      <script crossorigin="anonymous" src="https://kit.fontawesome.com/c326dfdc36.js"></script>
+      <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+      <script crossorigin="anonymous"
+         src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+      <script src="https://www.gstatic.com/firebasejs/8.7.1/firebase-app.js"></script>
+      <script src="https://www.gstatic.com/firebasejs/8.7.1/firebase-auth.js"></script>
+      <script src="https://www.gstatic.com/firebasejs/8.7.1/firebase-firestore.js"></script>
+      <script src="https://www.gstatic.com/firebasejs/8.7.1/firebase-database.js"></script>
+      {% load static %}
+      <script src="{% static '/js/firebaseConfig.js' %}" type="text/javascript"></script>
+      <link href="{% static '/css/btn.css' %}" rel="stylesheet">
+      <script type="text/javascript" src="{% static '/js/date.js' %}"></script>
+      <script type="text/javascript" src="{% static '/js/attendance.js' %}"></script>
+      <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+      <script>
+         var database = firebase.database();
+
+         function createAttendanceRecord() {
+         // Get the value of the date input field
+         var dateInput = document.getElementById("date").value;
+         var currentDate = new Date().toISOString().slice(0, 10);
+
+         // Check if the value of the date input exists in the database
+         database.ref("Attendance/" + dateInput).once("value", function(snapshot) {
+         if (snapshot.exists()) {
+         console.log("Attendance record already exists for " + dateInput );
+         } else {
+         console.log("Creating new attendance record for " + dateInput );
+
+         var students = [
+         {%for student in students%}
+         { Name: "{{ student.name }}", Attendance: "unchecked", Section: "{{ student.section }}", Image: "{{ student.img }}"  },
+         {%endfor%}
+         ];
+
+         // Loop through each student and add them to the attendance record
+         for (var i = 0; i < students.length; i++) {
+         var student = students[i];
+         // Create a new key in the "Attendance" node with the name based on the value of the date input
+         var newAttendanceRef = database.ref("Attendance/" + dateInput);
+         // Add a child node with the "Name" and "Attendance" properties for the current student
+         newAttendanceRef.child("Student" + (i+1)).set({
+          Name: student.Name,
+          Attendance: student.Attendance,
+          Section: student.Section,
+          Image: student.Image
+         });
+         }
+         if (dateInput === currentDate) {
+         location.reload();
+         } else {
+         console.log("The date is not today's date");
+         }
+         }
+         });
+
+         }
+         window.onload = function() {
+         createAttendanceRecord();
+         }
+
+         $(document).ready(function() {
+
+           const form = $('#my-form');
+           const urlParams = new URLSearchParams(window.location.search);
+              const dateParam = urlParams.get('date');
+              $('#date').val(dateParam);
+
+           $('#date').on('change', function() {
+           createAttendanceRecord();
+           form.submit();
+
+           });
+         });
+         $(document).ready(function() {
+         	// Retrieve attendance data from the server or define it manually
+         	var attendanceData = [
+         	  {% for att in attendance %}
+         	  {
+         		label: "{{ att.att_name }}",
+         		value: "{{ att.attendance }}"
+         	  },
+         	  {% endfor %}
+         	];
+
+         	// Prepare data for the chart
+         	var presentCount = attendanceData.filter(function(data) {
+         	  return data.value === 'present';
+         	}).length;
+         	var lateCount = attendanceData.filter(function(data) {
+         	  return data.value === 'late';
+         	}).length;
+         	var absentCount = attendanceData.filter(function(data) {
+         	  return data.value === 'absent';
+         	}).length;
+
+         	var chartData = {
+         	  labels: ['Present', 'Late', 'Absent'],
+         	  datasets: [{
+         		data: [presentCount, lateCount, absentCount],
+         		backgroundColor: ['#28a745', '#ffc107', '#dc3545']
+         	  }]
+         	};
+
+         	// Create the chart
+         	var ctx = document.getElementById('attendanceChart').getContext('2d');
+         	new Chart(ctx, {
+         	  type: 'doughnut',
+         	  data: chartData,
+         	  options: {
+         		responsive: true,
+         		maintainAspectRatio: false, // Adjusts the chart size to fit its container
+         	legend: {
+         		position: 'bottom'
+         	}
+         	  }
+         	});
+           });
+           document.addEventListener("DOMContentLoaded", function () {
+         	const sidebarToggle = document.getElementById("sidebar-toggle");
+         	const studentsLink = document.getElementById("students-link");
+         	const attendanceLink = document.getElementById("attendance-link");
+         	const sectionLink = document.getElementById("section-link");
+         	;
+
+         	// Hide attendance and students sections by default
+         	studentsLink.classList.add("d-none");
+         	attendanceLink.classList.add("d-none");
+         	sectionLink.classList.add("d-none");
+
+
+         	// Event listener for sidebar toggle button
+         	sidebarToggle.addEventListener("click", function () {
+         		// Toggle the visibility of students and attendance sections
+         		studentsLink.classList.toggle("d-none");
+         		attendanceLink.classList.toggle("d-none");
+         		sectionLink.classList.toggle("d-none");
+
+         	});
+         });
+
+      </script>
+   </head>
+   <style>
+      .sticky-top {
+      position: sticky;
+      top: 0;
+      }
+      .bg-light {
+      background-color: #f8f9fa;
+      }
+      .flex-sm-column {
+      flex-direction: column;
+      }
+      .flex-row {
+      flex-direction: row;
+      }
+      .flex-nowrap {
+      flex-wrap: nowrap;
+      }
+      .align-items-center {
+      align-items: center;
+      }
+      .nav-pills .nav-link {
+      border-radius: 0;
+      }
+    
+      .nav-pills .nav-link.active {
+      background-color: #007bff;
+      color: #fff;
+      }
+      .container {
+      position: relative;
+      }
+      #attendanceChart {
+      width: 250px;
+      height: 250px;
+      position: absolute;
+      top: 0;
+      right: 0;
+      }
+      body {
+			background-color: #242943;
+			font-family: 'Poppins', sans-serif;
+			color: #FFFF;
+		}
+		.sticky-top {
+			position: sticky;
+			top: 0;
+		}
+	
+		.bg-light {
+			background-color: #f8f9fa;
+		}
+	
+		.flex-sm-column {
+			flex-direction: column;
+		}
+	
+		.flex-row {
+			flex-direction: row;
+		}
+	
+		.flex-nowrap {
+			flex-wrap: nowrap;
+		}
+	
+		.align-items-center {
+			align-items: center;
+		}
+	
+		.nav-pills .nav-link {
+			border-radius: 0;
+		}
+	
+
+		.nav-pills .nav-link.active {
+			background-color: #007bff;
+			color: #fff;
+		}
+		.container {
+			position: relative;
+		  }
+		  
+		  #attendanceChart {
+			width: 250px;
+			height: 250px;
+			position: absolute;
+			top: 0;
+			right: 0;
+		  }
+   </style>
+   <body>
+      <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+         <button class="btn btn-link" id="sidebar-toggle" aria-label="Toggle Sidebar">
+         <i class="fas fa-bars fa-lg"></i>
+         </button>
+         <div class="container">
+            <a class="navbar-brand" href="/">Attendance Monitoring System</a>
+            <select class="btn btn-dark btn-sm ms-2" name="sectionSort" id="sectionSort">
+               <option disabled>Sort by Section</option>
+               {% for section in sections %}
+               {% if forloop.first %}
+               <option selected>Show All</option>
+               <option >{{ section.section }}</option>
+               {% else %}
+               <option>{{ section.section }}</option>
+               {% endif %}
+               {% endfor %}
+            </select>
+            <div class="ml-auto">
+            </div>
+         </div>
+      <div class="container-fluid">
+         
+         </nav>
+         <div class="row">
+            {%include 'nav.html'%}
+            <div class="col-sm p-3 min-vh-100">
+               <!-- content -->
+               <div class="container">
+                  <h2 class="py-2">Attendance</h2>
+                 
+                  <h1 class="test" id="test"></h1>
+                  <form class="row" method="GET" id="my-form" action="{% url 'attendance' %}">
+                     <label class="col-1 col-form-label" for="date">Date</label>
+                     <div class="col-5">
+                        <div class="input-group date">
+                           <input class="form-control" id="date" name="date" type="date">
+                        </div>
+                     </div>
+                     <div class="col-3 d-flex flex-row justify-content-end">
+                        <div class="me-2">
+                           <button style="height: 35px;" type="button" class="btn btn-primary btn-sm me-2" data-bs-toggle="modal" data-bs-target="#myModal">
+                           View Report
+                           </button>
+                        </div>
+                        <div class="ms-2">
+                           <button style="height: 35px;" type="button" class="btn btn-danger btn-sm me-2" id="resetButton" onclick="resetData()">Reset Data</button>
+                        </div>
+                     </div>
+                  </form>
+                  <!-- Modal -->
+                  <div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                     <div class="modal-dialog modal-dialog-centered" role="document">
+                        <div class="modal-content">
+                           <div class="modal-header" style="color:black;">
+                              <h5 class="modal-title" id="exampleModalLabel">Report <span id="selectedDate"></h5>
+                              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                           </div>
+                           <div class="modal-body">
+                              <div class="d-flex justify-content-center align-items-center" style="height: 250px;">
+                                 <canvas id="attendanceChart"></canvas>
+                              </div>
+                           </div>
+                           <div class="modal-footer">
+                              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                           </div>
+                        </div>
+                     </div>
+                  </div>
+                  <div class="card-grid pt-4">
+                     <div class="row row-cols-2 row-cols-md-2 row-cols-lg-3 g-4 align-items-stretch" id="card-containers">
+                        <!-- Firebase data will be dynamically added here -->
+                        {% for att in attendance %}
+                        <div class="col st" style="width:15rem;"  data-section="{{ att.att_section }}">
+                           <div class="card h-100" >
+                              {% load static %}
+
+                              {% if att.img == 'no-image' %}
+                                <img alt="Person placeholder" class="card-img-top img-thumbnail rounded-circle" src="{% static 'person.png' %}" style="width:300px; border:none; height:100%;">
+                              {% else %}
+                                <img alt="Person" class="card-img-top img-thumbnail rounded-circle" src="{{ att.img }}" style="width:300px; border:none">
+                              {% endif %}
+
+                              <div class="card-body text-center" style="color:black; background-color:#D5D5D5;">
+                                 <h5 class="card-title studentName">{{ att.att_name }}</h5>
+                                 <!-- Student name that will be retrieved from firebase -->
+                                 <div class="card-text" >
+                                    <form id="{{ att.att_name }}_attendance_form">
+                                       {% csrf_token %}
+                                       <input type="hidden" name="{{ att.att_IDname }}_attendance" id="{{ att.att_IDname }}_attendance" value="{{ att.attendance }}">
+                                       <input type="hidden" name="{{ att.att_IDname }}_key" id="{{ att.att_IDname }}_key">
+                                       <input type="hidden" name="{{ att.att_section }}" id="{{ att.att_section }}" value="{{ att.att_section }}">
+                                       <input data-key="{{ att.key }}" autocomplete="off" class="btn-check btn-circle btn-lg attendance"
+                                       id="{{ att.att_IDname }}_Present"
+                                       name="{{ att.att_IDname }}_options" type="radio" value="present" {% if att.attendance == 'present' %}checked{% endif %}>
+                                       <label class="btn btn-success btn-circle btn-xl"
+                                          for="{{ att.att_IDname }}_Present">P</label>
+                                       <input data-key="{{ att.key }}" autocomplete="off" class="btn-check btn-circle btn-lg attendance"
+                                       id="{{ att.att_IDname }}_Late"
+                                       name="{{ att.att_IDname }}_options" type="radio" value="late" {% if att.attendance == 'late' %}checked{% endif %}>
+                                       <label class="btn btn-warning btn-circle btn-xl"
+                                          for="{{ att.att_IDname }}_Late">L</label>
+                                       <input data-key="{{ att.key }}" autocomplete="off" class="btn-check btn-circle btn-lg attendance"
+                                       id="{{ att.att_IDname }}_Absent"
+                                       name="{{ att.att_IDname }}_options" type="radio" value="absent" {% if att.attendance == 'absent' %}checked{% endif %}>
+                                       <label class="btn btn-danger btn-circle btn-xl"
+                                          for="{{ att.att_IDname }}_Absent">A</label>
+                                    </form>
+                                 </div>
+                              </div>
+                           </div>
+                        </div>
+                        <script>
+                           $('input[type=radio][name={{ att.att_IDname }}_options]').change(function() {
+                           	var attendanceKey = $(this).data('key');
+
+                           	database.ref("Attendance/" + dateInput).child(attendanceKey).once('value', function(snapshot) {
+                           		$('#{{ att.att_IDname }}_key').val(attendanceKey);
+                           	});
+
+                           	// Get the value of the selected radio button
+                           	var choice = $(this).val();
+                           	var dateInput = document.getElementById("date").value;
+                           	// Update the text input value based on the radio button selection
+                           	if (choice === 'present') {
+                           		$('input[name={{ att.att_IDname }}_attendance]').val('present');
+                           	} else if (choice === 'late') {
+                           		$('input[name={{ att.att_IDname }}_attendance]').val('late');
+                           	} else if (choice === 'absent') {
+                           		$('input[name={{ att.att_IDname }}_attendance]').val('absent');
+                           	}
+                           	var attendanceStatus = $('input[name={{ att.att_IDname }}_attendance]').val();
+                           	console.log('attendanceStatus:', this);
+                           	$('#{{ att.att_name }}_attendance_form').submit();
+
+                           	$.ajax({
+                           		url: '/update_attendance/',
+                           		type: 'POST',
+                           		data: {
+                           			'attendanceStatus': attendanceStatus,
+                           			'attendanceKey': attendanceKey,
+                           			'dateInput': dateInput,
+                           			'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val(),
+                           		},
+                           		success: function(data) {
+                           			if (data.status == 'success') {
+                           				$('#update-student-modal').modal('hide');
+                           				location.reload();
+                           			} else {
+                           				console.log('Error:', data.message);
+                           			}
+                           		},
+                           		error: function(jqXHR, textStatus, errorThrown) {
+                           			console.log('Error:', errorThrown);
+                           		}
+                           	});
+                           });
+
+                        </script>
+                        {% endfor %}
+                        <script>
+                           $(document).ready(function() {
+                              // Function to filter and show cards based on selected section
+                              function filterCardsBySection(section) {
+                                 // Hide all cards by default
+                                 $('.st').css('display', 'none');
+                                 // Show only the cards of the selected section or show all if "Show All" is selected
+                                 if (section === "Show All") {
+                                    $('.st').css('display', 'block');
+                                 } else {
+                                    $('.st[data-section="' + section + '"]').css('display', 'block');
+                                 }
+                              }
+                        
+                              // Initial load: Show cards of the selected section
+                              var selectedSection = $('#sectionSort option:selected').text();
+                              filterCardsBySection(selectedSection);
+                        
+                              // Event handler for section change
+                              $('#sectionSort').on('change', function() {
+                                 var selectedSection = $(this).find('option:selected').text();
+                                 filterCardsBySection(selectedSection);
+                              });
+                           });
+                        </script>
+                        
+                     </div>
+                  </div>
+               </div>
+            </div>
+         </div>
+      </div>
+   </body>
+</html>

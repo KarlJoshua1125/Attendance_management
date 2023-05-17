@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en-US" dir="ltr">
+
+<head>
+    <title>Section List</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" crossorigin="anonymous"
+        href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css">
+
+    <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.15.4/css/all.css"
+        integrity="sha384-DyZ88mC6Up2uqS4h/KRgHuoeGwBcD4Ng9SiP4dIRy0EXTlnuz47vAwmeGwVChigm" crossorigin="anonymous" />
+    <script src="https://kit.fontawesome.com/c326dfdc36.js" crossorigin="anonymous"></script>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+    <script crossorigin="anonymous" src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js">
+    </script>
+
+    <script src="https://www.gstatic.com/firebasejs/8.7.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.7.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.7.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.7.1/firebase-database.js"></script>
+    {% load static %}
+    <script type="text/javascript" src="{% static '/js/firebaseConfig.js' %}"></script>
+    <script type="text/javascript" src="{% static '/js/date.js' %}"></script>
+    <script>
+
+        $(document).ready(function () {
+            $(".btn-lg").click(function () {
+                $(this).toggleClass('btn-success');
+                $(this).toggleClass('btn-danger'); // Add this line
+            });
+            $('#sort-by-name-button').on('click', function () {
+                var rows = $('#students-table tbody tr').get();
+                rows.sort(function (row1, row2) {
+                    var sec1 = $(row1).data('id');
+                    var sec2 = $(row2).data('id');
+                    return sec1.localeCompare(sec2);
+                });
+                $.each(rows, function (index, row) {
+                    $('#students-table tbody').append(row);
+                });
+            });
+
+
+            $('#search-input').on('input', function () {
+                var searchTerm = $('#search-input').val().toLowerCase();
+                $('#students-table tbody tr').each(function () {
+                    var name = $(this).find('.id').text().toLowerCase();
+                    if (name.indexOf(searchTerm) === -1) {
+                        $(this).hide();
+                    } else {
+                        $(this).show();
+                    }
+                });
+            });
+
+            $('#clear-button').on('click', function () {
+                $('#search-input').val('');
+                $('#students-table tbody tr').show();
+            });
+
+
+            $('#sort-button').on('click', function () {
+                var $table = $('#students-table');
+                var $tbody = $table.find('tbody');
+                var $rows = $tbody.find('tr');
+                $rows.sort(function (a, b) {
+                    var lnameA = $(a).find('.id').text().toLowerCase();
+                    var lnameB = $(b).find('.id').text().toLowerCase();
+                    if (lnameA < lnameB) return -1;
+                    if (lnameA > lnameB) return 1;
+                    return 0;
+                });
+                $tbody.html($rows);
+            });
+
+
+
+
+            $('#add-student').on('submit', function (e) {
+                e.preventDefault();
+
+                var id = $('#id').val();
+
+
+                database.ref('Sections').push({
+                    section: id,
+                }).then(function () {
+                    $('#exampleModal').modal('hide');
+                    location.reload();
+                }).catch(function (error) {
+                    console.error(error);
+                });
+            });
+
+            $('#add-student-btn').on('click', function () {
+                $('#exampleModal').modal('show');
+            });
+
+            $('.edit-student').on('click', function (e) {
+                e.preventDefault();
+
+                var sectionKey = $(this).data('key');
+
+                database.ref('Sections').child(sectionKey).once('value', function (snapshot) {
+                    var section = snapshot.val();
+
+                    $('#update-id').val(section.section);
+                    $('#update-section-key').val(sectionKey);
+
+                    $('#update-student-modal').modal('show');
+                });
+            });
+
+            $('#update-student-form').on('submit', function (e) {
+                e.preventDefault();
+
+                var id = $('#update-id').val();
+                var key = $('#update-section-key').val();
+
+
+                $.ajax({
+                    url: '/update_section/',
+                    type: 'POST',
+                    data: {
+                        'section': id,
+                        'key': key,
+                        'csrfmiddlewaretoken': $('input[name=csrfmiddlewaretoken]').val(),
+                    },
+                    success: function (data) {
+                        if (data.status == 'success') {
+                            $('#update-student-modal').modal('hide');
+                            location.reload();
+                        } else {
+                            alert(data.errors);
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        console.error(xhr.responseText);
+                    }
+                });
+            });
+        });
+        document.addEventListener("DOMContentLoaded", function () {
+            const sidebarToggle = document.getElementById("sidebar-toggle");
+            const studentsLink = document.getElementById("students-link");
+            const attendanceLink = document.getElementById("attendance-link");
+            const sectionLink = document.getElementById("section-link");
+            ;
+
+            // Hide attendance and students sections by default
+            studentsLink.classList.add("d-none");
+            attendanceLink.classList.add("d-none");
+            sectionLink.classList.add("d-none");
+
+
+            // Event listener for sidebar toggle button
+            sidebarToggle.addEventListener("click", function () {
+                // Toggle the visibility of students and attendance sections
+                studentsLink.classList.toggle("d-none");
+                attendanceLink.classList.toggle("d-none");
+                sectionLink.classList.toggle("d-none");
+
+            });
+        });
+
+
+    </script>
+
+</head>
+
+
+<style>
+    /* Styles for the page header */
+    body {
+        background-color: #242943;
+        font-family: 'Poppins', sans-serif;
+        color: #FFFF;
+    }
+
+    h2 {
+        font-size: 36px;
+        margin-top: 20px;
+        margin-bottom: 40px;
+        text-align: center;
+    }
+
+    /* Styles for the search and sort buttons */
+    .row.mb-5 button {
+        margin-right: 10px;
+    }
+
+    /* Styles for the "Add New Student" button */
+    #add-student-btn {
+        margin-bottom: 20px;
+    }
+
+    /* Styles for the student table */
+    #students-table th {
+        text-align: center;
+        font-size: 18px;
+    }
+
+    #students-table td {
+        text-align: center;
+        font-size: 16px;
+    }
+
+    /* Styles for the "Edit" and "Delete" buttons in the student table */
+    .edit-student,
+    .btn-danger {
+        padding: 5px 10px;
+        margin-right: 5px;
+        font-size: 14px;
+        text-decoration: none;
+        color: #fff;
+    }
+
+    .edit-student {
+        background-color: #28a745;
+        border-color: #28a745;
+    }
+
+    .edit-student:hover {
+        background-color: #218838;
+        border-color: #1e7e34;
+    }
+
+    .btn-danger {
+        background-color: #dc3545;
+        border-color: #dc3545;
+    }
+
+    .btn-danger:hover {
+        background-color: #c82333;
+        border-color: #bd2130;
+    }
+</style>
+
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <button class="btn btn-link" id="sidebar-toggle" aria-label="Toggle Sidebar">
+            <i class="fas fa-bars fa-lg"></i>
+        </button>
+
+        <div class="container">
+
+            <a class="navbar-brand" href="/">Attendance Monitoring System</a>
+
+            <div class="ml-auto">
+                <form class="form-inline">
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="search-input" placeholder="Search Section">
+
+                        <div class="input-group-append"></div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </nav>
+    <div class="container-fluid">
+        <div class="row">
+            {%include 'nav.html'%}
+
+            <div class="col-sm p-3 min-vh-100">
+                <!-- content -->
+
+                <div class="container">
+                    <section class="intro">
+                        <div class="bg-image h-100">
+                            <div class="mask d-flex align-items-center h-100">
+                                <div class="container">
+                                    <div class="row justify-content-center">
+                                        <div class="col-12">
+                                            <div class="card bg-dark shadow-2-strong">
+                                                <div class="card-body">
+
+
+                                                    <div class="h2 font-weight-bold">Sections List</div>
+                                                    <div class="d-flex flex-row justify-content-end">
+
+                                                        <button style="height: 35px;" type="button"
+                                                            class="btn btn-success btn-sm me-2" id="add-student-btn">
+                                                            <i class="fas fa-plus"></i> Add New Section</button>
+
+
+                                                    </div>
+                                                    <div class="table-responsive">
+                                                        <table class="table table-dark table-borderless mb-0"
+                                                            id="students-table">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th scope="col">Section</th>
+                                                                    <th scope="col">Actions</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                {% for section in sections %}
+                                                                <tr>
+                                                                    <td class="id">{{ section.section }}</td>
+                                                                    <td>
+
+                                                                        <a href="#" class="edit-student btn btn-success"
+                                                                            data-key="{{ section.key }}"
+                                                                            data-bs-toggle="modal"
+                                                                            data-bs-target="#update-student-modal">
+                                                                            <i class="fas fa-edit"></i>
+                                                                        </a>
+
+
+                                                                        <a class="btn btn-danger"
+                                                                            href='deletesection/{{ section.section }}'>
+                                                                            <i class="fas fa-trash-alt"></i>
+                                                                        </a>
+
+                                                                    </td>
+                                                                </tr>
+                                                                {% endfor %}
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </section>
+
+
+                    <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel"
+                        aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content" style="color:black;">
+                                <div class="modal-header">
+                                    <h5 class="modal-title" id="exampleModalLabel">Add Section</h5>
+                                    <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                        aria-label="Close"></button>
+                                </div>
+                                <div class="modal-body">
+                                    <form id="add-student">
+                                        <div class="form-group row">
+                                            <label for="id">Section</label>
+                                            <input type="text" class="form-control" name="id" id="id" required>
+                                        </div>
+
+                                        <button type="submit" class="btn btn-primary">Submit</button>
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal fade" id="update-student-modal" tabindex="-1"
+                        aria-labelledby="update-student-modal-label" aria-hidden="true">
+                        <div class="modal-dialog">
+                            <div class="modal-content">
+                                <form id="update-student-form"  style="color:black;">
+                                    {% csrf_token %}
+                                    <div class="modal-header">
+                                        <h5 class="modal-title" id="update-student-modal-label">Update Student</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal"
+                                            aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="form-group row">
+                                            <label for="update-id">Section</label>
+                                            <input type="text" class="form-control" name="id" id="update-id" required>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="submit" class="btn btn-primary">Save changes</button>
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close
+                                        </button>
+                                        <input type="hidden" id="update-section-key">
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+</body>
+
+</html>
